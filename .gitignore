@@ -1,2 +1,12 @@
 # ignore mac os image files.
 .DS_Store
+
+# vs code files
+.vscode
+
+# Python build artifacts
+**/__pycache__
+*.pyc
+
+.venv
+env/
