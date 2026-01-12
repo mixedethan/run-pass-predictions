@@ -114,12 +114,12 @@ st.markdown("""
     <style>
         .block-container {
             padding-top: 1rem;
-            padding-bottom: 0rem;
+            padding-bottom: 3rem;
             margin-top: 1rem;
         }
         
         .css-1d391kg {
-            padding-top: 1rem; 
+            padding-top: 1rem;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -342,7 +342,9 @@ if down is not None:
         input_data_play = input_data[cols_play].copy()
 
         prob_play = play_model.predict_proba(input_data_play)[0]
+        print(f'Play Model Probabilities: {prob_play}')
         pred_play = play_model.predict(input_data_play)[0]
+        print(f'Play Model Predictions: {pred_play}')
         
         prediction_display = "PASS" if pred_play == 1 else "RUN"
         confidence_display = f"{max(prob_play)*100:.1f}%"
