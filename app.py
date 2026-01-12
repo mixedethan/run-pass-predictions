@@ -207,7 +207,7 @@ with st.sidebar:
     st.caption("Engineered by Ethan Wilson")
 
 ### main screen
-st.title("The Pre-Snap Read 🏈")
+st.title("FourthDown.io 🏈")
 st.markdown("""
 <div style="margin-top: -20px; color: #aaaaaa; font-style: italic;">
     Leveraging gradient boosting and real-world NFL play-by-play data to predict offensive play-calling tendencies. Input a game situation to receive a defensive breakdown.
