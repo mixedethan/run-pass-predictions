@@ -24,3 +24,11 @@ This tool uses historical NFL play-by-play data (sourced from `nflfastR`) to tra
    ```bash
    git clone [https://github.com/mixedethan/run-pass-predictions.git](https://github.com/mixedethan/run-pass-predictions.git)
    cd run-pass-predictions
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+
+2. Run the web app:
+   ```bash
+   streamlit run app.py
