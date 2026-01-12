@@ -9,7 +9,7 @@ import shap
 
 # helper function to generate our field
 @st.cache_data(show_spinner=False)
-def create_football_field(los_line_number=None, ydstogo=None, figsize=(12, 7.33)):
+def create_football_field(los_line_number=None, ydstogo=None):
     """
     - X-Axis (Length) -> 0 to 120 (0-10 is the left endzone, 
         10-110 is the main field, 
@@ -17,7 +17,7 @@ def create_football_field(los_line_number=None, ydstogo=None, figsize=(12, 7.33)
     - Y-Axis (Width) -> 0 to 53.3 (width for an nfl field)
     """
     plt.style.use('fast')
-    fig, ax = plt.subplots(1, figsize=figsize, facecolor='none')
+    fig, ax = plt.subplots(1, figsize=(12,6), facecolor='none')
 
     # main field background
     rect = patches.Rectangle((0, 0), 120, 53.3, linewidth=0.1, edgecolor='r', facecolor='darkgreen', zorder=0)
@@ -60,6 +60,7 @@ def create_football_field(los_line_number=None, ydstogo=None, figsize=(12, 7.33)
         if hl > 100: # if we are inside the 10 then the first down line is the goal line (110)
             fd = 110 # fd = first down
             ax.plot([fd, fd], [0, 53.3], color='orange', linewidth=3, linestyle='--')
+
         else: # if we are not within goal
             fd = hl + ydstogo
             ax.plot([fd, fd], [0, 53.3], color='orange', linewidth=3, linestyle='--')
@@ -68,7 +69,7 @@ def create_football_field(los_line_number=None, ydstogo=None, figsize=(12, 7.33)
     plt.ylim(-5, 58.3)
     plt.axis('off')
 
-    #fig.tight_layout(pad=0)
+    #fig.tight_layout()
     return fig
 
 @st.cache_resource 
@@ -108,7 +109,21 @@ FEATURE_MAP = {
 
 # full browser width, set tab title
 st.set_page_config(layout="wide", page_title="NFL Play Predictor")
-
+# set page edges
+st.markdown("""
+    <style>
+        .block-container {
+            padding-top: 1rem;
+            padding-bottom: 0rem;
+            margin-top: 1rem;
+        }
+        
+        .css-1d391kg {
+            padding-top: 1rem; 
+        }
+    </style>
+""", unsafe_allow_html=True)
+# define metric cards
 st.markdown("""
 <style>
     .metric-card {
@@ -145,7 +160,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
 ### --- sidebar -> game situation info ---
 with st.sidebar:
     st.subheader("Connect with me")
@@ -161,10 +175,11 @@ with st.sidebar:
     </div>
     """
     st.markdown(social_media_html, unsafe_allow_html=True)
-
+    
     st.markdown("---")
+
     with st.form(key='game_situation_form'):
-        st.header("Game Situation Input 📋")
+        st.header("Game Situation Input")
 
         quarter = st.segmented_control("**Quarter**", options=[1, 2, 3, 4], selection_mode='single', default=1)
         minutes = st.number_input("**Minutes Remaining**", 0, 15, 15)
@@ -173,11 +188,11 @@ with st.sidebar:
         gsr = minutes * 60 + (4 - quarter) * 900
         score_diff = st.slider("**Score Differential**", -30, 30, 0)
         st.caption("*(ex. -7 is down by 7 pts.)*")
-        to_remaining = st.segmented_control("**Timeouts Remaining**", options=[1, 2, 3], selection_mode='single')
+        to_remaining = st.segmented_control("**Timeouts Remaining**", options=[1, 2, 3], selection_mode='single', default=3)
 
         st.markdown("---")
 
-        st.header("📋 Drive Situation Input")
+        st.header("Drive Situation Input")
         down = st.segmented_control("**Down**", options=[1, 2, 3, 4], selection_mode='single')
         distance = st.slider("**Yards to Go**", 1, 25, 10)
         yardline = st.slider("**Yardline** ", 1, 99, 50)
@@ -186,15 +201,64 @@ with st.sidebar:
         st.markdown("---")
 
         submit = st.form_submit_button(label='Predict Play💥')
-
+        st.caption("*You must select a down to generate insights.*")
+    
     st.markdown("---")
-
     st.caption("Engineered by Ethan Wilson")
 
 ### main screen
-st.title("🏈 ML Defensive Coordinator Assistant ")
-st.markdown("Real-time play prediction based on historical NFL play-by-play data sourced from nflfastr.")
+st.title("The Pre-Snap Read 🏈")
+st.markdown("""
+<div style="margin-top: -20px; color: #aaaaaa; font-style: italic;">
+    Leveraging gradient boosting and real-world NFL play-by-play data to predict offensive play-calling tendencies. Input a game situation to receive a defensive breakdown.
+</div>
+""", unsafe_allow_html=True)
 
+st.markdown("---")
+
+
+# situational pills
+tags = []
+
+if yardline >= 80:
+    tags.append(("🚨 Redzone Alert 🚨", "#ff4b4b")) # Red
+elif yardline <= 10:
+    tags.append(("🧱 Backed Up", "#ffa500")) # Orange
+
+if gsr <= 120 and score_diff < 0 and score_diff >= -8:
+    tags.append(("⚡ 2-Minute Drill", "#00CC96"))
+
+if down == 3 and distance >= 10:
+    tags.append(("🛡️ Air Defense", "#1f77b4")) #
+elif down == 3 and distance <= 2:
+    tags.append(("💪 Goal Line / Short Yardage", "#ff4b4b"))
+
+if not tags:
+    tags.append(("⚖️ Standard Play", "#333333"))
+
+# display as pills
+cols = st.columns(len(tags))
+for col, (text, color) in zip(cols, tags):
+    col.markdown(f"""
+    <div style="
+        background-color: {color};
+        padding: 8px 15px;
+        border-radius: 20px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    ">
+        {text}
+    </div>
+    """, unsafe_allow_html=True)
+    
+
+st.markdown("---")
+
+
+#######
 # input data for model
 input_data = pd.DataFrame({
     'qtr': [quarter],
@@ -309,9 +373,78 @@ display_metric_box(col2, "Model Confidence", confidence_display, "Probability")
 # why? / SHAP
 display_metric_box(col3, "Key Factor", key_factor_display, "Biggest Influencer")
 
+
 st.markdown("---")
 
-# show the field
-st.markdown("### 🏟️ Field View")
-fig = create_football_field(los_line_number=yardline, ydstogo=distance)
-st.pyplot(fig, transparent=True, use_container_width=True)
+
+# visuals for field and below
+if down is not None:
+
+    # generate the field
+    st.markdown("### 🏟️ Field View")
+    fig = create_football_field(los_line_number=yardline, ydstogo=distance)
+    st.pyplot(fig, transparent=True, use_container_width=True)
+
+
+    # probability distribution chart
+    st.markdown("### 📊 Probability Breakdown")
+
+    if down == 4 and pred_decision == 1: # if it's 4th and the model says go
+        chart_data = pd.DataFrame({
+            "Play Type": ["PASS", "RUN"],
+            "Probability": [prob_play[1], prob_play[0]]
+        })
+        
+        st.bar_chart(
+            chart_data.set_index("Play Type"),
+            color=["#FF4B4B"],
+            horizontal=True
+        )
+
+    elif down == 4: # if it's 4th, give go vs kick probs
+        # go vs kick probabilities
+        chart_data = pd.DataFrame({
+            "Decision": ["GO", "KICK/PUNT"],
+            "Probability": [prob_decision[1], prob_decision[0]]
+        })
+
+        st.bar_chart(
+            chart_data.set_index("Decision"), 
+            color=["#00CC96"],
+            horizontal=True
+        )
+
+    else: # 1-3 down, give pass/run probs
+        chart_data = pd.DataFrame({
+            "Play Type": ["PASS", "RUN"],
+            "Probability": [prob_play[1], prob_play[0]]
+        })
+
+        st.bar_chart(
+            chart_data.set_index("Play Type"),
+            horizontal=True
+        )
+
+    # top 3 factors
+    st.markdown("### 🧠 Model Reasoning (Top Factors)")
+
+    # top 3 feature indices
+    top_indices = np.argsort(np.abs(vals[0]))[-3:][::-1]
+
+    # columns for the 3 factors
+    f1, f2, f3 = st.columns(3)
+
+    for i, col in zip(top_indices, [f1, f2, f3]):
+        feature_name = input_data_decision.columns[i] if down == 4 else input_data_play.columns[i]
+        feature_val = vals[0][i]
+        clean_name = FEATURE_MAP.get(feature_name, feature_name)
+        
+        color = "green" if feature_val > 0 else "red"
+        arrow = "⬆" if feature_val > 0 else "⬇"
+        
+        col.markdown(f"""
+        <div style="background-color: #1E1E1E; padding: 10px; border-radius: 5px; border-left: 5px solid {color};">
+            <small style="color: #aaa;">{clean_name}</small><br>
+            <span style="font-size: 18px; font-weight: bold; color: white;">{arrow} Impact</span>
+        </div>
+        """, unsafe_allow_html=True)
