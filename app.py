@@ -162,6 +162,7 @@ st.markdown("""
 
 ### --- sidebar -> game situation info ---
 with st.sidebar:
+    st.badge('Engineered By Ethan Wilson')
     st.subheader("Connect with me")
 
     social_media_html = """
