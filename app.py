@@ -221,15 +221,15 @@ st.markdown("---")
 tags = []
 
 if yardline >= 80:
-    tags.append(("🚨 Redzone Alert 🚨", "#ff4b4b")) # Red
+    tags.append(("🚨 Redzone Alert 🚨", "#ff4b4b"))
 elif yardline <= 10:
-    tags.append(("🧱 Backed Up", "#ffa500")) # Orange
+    tags.append(("🧱 Backed Up", "#ffa500"))
 
 if gsr <= 120 and score_diff < 0 and score_diff >= -8:
     tags.append(("⚡ 2-Minute Drill", "#00CC96"))
 
 if down == 3 and distance >= 10:
-    tags.append(("🛡️ Air Defense", "#1f77b4")) #
+    tags.append(("🛡️ Air Defense", "#1f77b4"))
 elif down == 3 and distance <= 2:
     tags.append(("💪 Goal Line / Short Yardage", "#ff4b4b"))
 
