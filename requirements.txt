@@ -1,0 +1,9 @@
+```text
+streamlit
+pandas
+numpy
+matplotlib
+joblib
+lightgbm
+shap
+scikit-learn
