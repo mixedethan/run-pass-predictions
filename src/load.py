@@ -1,23 +1,33 @@
-import nflreadpy as nfl
 import pandas as pd
 from pathlib import Path
+from typing import Optional
 
-def load_data() -> pd.DataFrame:
-    pbp = nfl.load_pbp(seasons=[2019,2020,2021,2022,2023,2024,2025]) # 2021 - 2025 originally
-    df = pbp.to_pandas()
 
-    # /run-pass-predictions/
-    PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-    # /run-pass-predictions/data
-    DATA_DIR = PROJECT_ROOT / "data"
+def load_data(filepath: Optional[str] = None) -> pd.DataFrame:
+    """
+    Load play-by-play data from CSV file.
     
-    # make the directory unless it already exists
-    DATA_DIR.mkdir(exist_ok=True)
-
-    # /run-pass-predictions/data/raw_pbp_19_25.csv
-    file_path = DATA_DIR / "raw_pbp_19_25.csv"
-
-    df.to_csv(file_path, index=False)
-
-    return df
+    Args:
+        filepath: Optional path to CSV file. If None, uses default data file.
+        
+    Returns:
+        DataFrame containing play-by-play data
+    """
+    if filepath is None:
+        PROJECT_ROOT = Path(__file__).resolve().parents[1]
+        DATA_DIR = PROJECT_ROOT / "data"
+        # Try the file used in the notebook first, fallback to other file
+        filepath = DATA_DIR / "raw_pbp_21_25.csv"
+        if not filepath.exists():
+            filepath = DATA_DIR / "raw_pbp_19_25.csv"
+    
+    try:
+        # Use low_memory=False to avoid dtype warnings
+        df = pd.read_csv(filepath, low_memory=False)
+        print(f"Data loaded successfully from {filepath}")
+        print(f"Shape: {df.shape}")
+        return df
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Data file not found: {filepath}")
+    except Exception as e:
+        raise Exception(f"Error loading data: {e}")
